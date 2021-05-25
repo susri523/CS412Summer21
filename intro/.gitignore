@@ -1,0 +1,8 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+node_modules/
+public/
+.idea/
+# Editor-based HTTP Client requests
+/httpRequests/
