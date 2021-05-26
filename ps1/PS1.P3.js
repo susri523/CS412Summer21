@@ -23,6 +23,8 @@ console.log("-------------------------------------------------------");
     with the original string, string modified with a->A,
     the number of characters replaced,
     and the length of the string
+    SINCE STRING ORIGINAL AND MODIFIED ARE SAME LENGTH
+    USE ORIGINAL TO CALCULATE LEN AND HOW MANY REPLACEMENTS
  */
 console.log("PART 2:");
 console.table(runDecorator(string, (expr) => {
