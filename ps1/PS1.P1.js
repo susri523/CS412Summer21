@@ -2,10 +2,12 @@
     revAlpha converts a given string to a new string
     in reverse alphabetical order
     -------------------------------------------------------
-    Split the string into an array, that is ordered ascending
-    and then reversed, and join it back together into a string
+    Split the string into an array, that is order descending
+    by passing in an inline compare where if a < b then return 1
+    and if a > b return -1. This means when a < b,
+    in place swap and join it back together into a string
  */
-const revAlpha = string => string.split("").sort().reverse().join("");
+const revAlpha = string => string.split("").sort((a, b) => (a < b ? 1 : -1)).join("");
 
 /*
     test case 1
