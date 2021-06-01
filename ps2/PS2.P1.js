@@ -38,16 +38,21 @@ function* evenFibs(){
         // store the next value of all fibs as an object so val can be retrieved
         let fibNum = getFibs.next()
 
+        //if the value is even then yield the value, otherwise continue until an even fib
         if (fibNum.value % 2 === 0){
             yield fibNum.value;
         }
     }
 }
 
-
+// we only want the first 6 even fibs
 let count = 6;
+
+// start the generator
 const getEvenFibs = evenFibs();
 
+// while the count goes to 0
 while ( count --> 0){
+    // log the next value of the evenFibs generator
     console.log(getEvenFibs.next().value);
 }
