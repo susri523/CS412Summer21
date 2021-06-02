@@ -8,10 +8,10 @@ function* fibs(){
     let [value1, value2, result] = [0, 1, 0];
 
     // the first 2 fib numbers are 0 and 1, so yield those as is
-    yield value1;
-    yield value2;
+    yield value1; // f(0) = 0
+    yield value2; // f(1) = 1
 
-    // loop continously using fib_n = fib_n-1 + fib_n-2
+    // loop continuously using fib_n = fib_n-1 + fib_n-2
     while (true){
         result = value1 + value2;
         value1 = value2;
