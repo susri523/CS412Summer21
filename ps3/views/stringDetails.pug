@@ -1,0 +1,9 @@
+extends layout
+
+block content
+    h1 The string received is "#{string}"
+
+    //only for the POST method do we want the length of the string displayed,
+    // but using same template for the names, so use if to make sure to display only if it was calculated
+    if length
+        p (It has a length of #{length}.)
