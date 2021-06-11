@@ -5,7 +5,7 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 
 //import from routes
-const psRouter = require('./routes/ps');
+const psRouter = require('./routes/ps3');
 
 const app = express();
 
