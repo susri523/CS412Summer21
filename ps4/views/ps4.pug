@@ -1,0 +1,10 @@
+extends layout
+
+block content
+    p Searched by #{msg}
+    if city
+        p Here are some music events in #{city}
+    if events
+        ul
+            each event in events
+                li #{event.name}

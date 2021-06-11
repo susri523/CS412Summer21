@@ -1,0 +1,13 @@
+extends layout
+
+block content
+    form(method="POST")
+        p Venue's City:
+            input(type="text" name="city" placeholder="")
+
+        p
+            input(type="submit" value="promise search" formaction="ps4/promise")
+        p
+            input(type="submit" value="async search" formaction="ps4/async")
+        p
+            input(type="submit" value="callback search" formaction="ps4/callback")
