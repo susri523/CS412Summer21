@@ -9,8 +9,8 @@ const request = require('request');
 const config = require('../tsconfig.json');
 const key = config.key;
 
-// url is same for all 3 calls so just make it a const
-const url = new URL('https://app.ticketmaster.com/discovery/v2/events.json')
+// url is same for all 3 calls so just make it a const gotten from config file
+const url = new URL(config.endpoint);
 
 /* ******************************************************************************************************************* */
 
@@ -27,22 +27,19 @@ router.get('/', (req, res, next) => {
  */
 const doPromise = function(city) {
     return new Promise (function(resolve, reject) {
-        // GET call to Ticketmaster API
-        const requestOptions = {
-            method: 'GET',
-            redirect: 'follow'
-        };
 
         //parameters of the event search, all hardcoded except the city from the form
-        const params = {apikey:key, classificationName: "music", countryCode:"US", city:city, page:"1", size:"5" };
+        let params = config.params;
+        params.city = city;
 
         // tag the search params to the url
         url.search = new URLSearchParams(params).toString();
 
-        // use fetch to make the call and the body has the data here
-        fetch(url, requestOptions)
+        // use fetch to make the call, pass in requestOpts for GET from config
+        // NOTE: the body has the data here
+        fetch(url, config.requestOptions)
             .then(body => {
-                // resolve is the cb so pass the body as a json to the function in the then
+                // resolve is the cb so pass the body as a json to the function in then
                 resolve(body.json());
             })
             .catch(error => console.log('error', error)); // catch errors
@@ -60,9 +57,13 @@ router.post('/promise', (req, res, next) => {
 
         // use this function as the callback on the body that returns from fetch
         .then(function (body) {
-            // render the page with all the values
-            // body returns json so parse for the event list
-            res.render('ps4', {msg: "Promise",city: req.body.city, events: body._embedded.events});
+            // render the page with all the values and body returns json so parse for the event list
+            if (body.page.totalElements === 0){
+                res.render('ps4', {msg: "Callback",city: req.body.city, noEvents: "True"});
+            } else {
+                res.render('ps4', {msg: "Promise",city: req.body.city, events: body._embedded.events});
+            }
+
 
         // if it fails use this to catch the error and render the error page
         }).catch(function (err) {
@@ -72,12 +73,52 @@ router.post('/promise', (req, res, next) => {
 
 /* ******************************************************************************************************************* */
 
+/*
+    PATH 2 HELPER FUNC: function that makes the call with node-fetch
+    and takes the city as the input using await
+ */
+const doAsync = async (city) => {
 
+    //parameters of the event search, all hardcoded except the city from the form
+    let params = config.params;
+    params.city = city;
 
+    // tag the search params to the url
+    url.search = new URLSearchParams(params).toString();
+
+    // await fetch to make the call and then await to parse and return the parse.
+    const body = await fetch(url, config.requestOptions);
+    return await body.json();
+
+    // .catch(error => console.log('error', error)); // catch errors
+}
+
+/*
+    PATH 2: handles the call using async/await and node-fetch to make the HTTP request
+    input comes from the body of the form
+ */
 router.post('/async', (req, res, next) => {
-        res.render('ps4', {msg:"Async", city: req.body.venue});
-    }
-)
+
+    //tell inner await to run first and then use () to run the function
+    (async function(){
+       // use await to do the request and pass in the query
+       const body = await doAsync(req.body.city);
+
+       // try to render the page to display the events
+       try {
+           if (body.page.totalElements === 0){
+               res.render('ps4', {msg: "Async",city: req.body.city, noEvents: "We found no events :("});
+           } else {
+               res.render('ps4', {msg: "Async", city: req.body.city, events: body._embedded.events});
+           }
+       }
+       // if not render the error page
+       catch(err){
+           res.render('error', {error: err});
+       }
+    })() // very very important to have the ()()
+
+})
 
 /* ******************************************************************************************************************* */
 
@@ -115,7 +156,11 @@ router.post('/callback', (req, res, next) => {
 
         // render the page with all the valuesbody returns json so parse for the event list
         try{
-            res.render('ps4', {msg: "Callback",city: req.body.city, events: body._embedded.events});
+            if (body.page.totalElements === 0){
+                res.render('ps4', {msg: "Callback",city: req.body.city, noEvents: "We found no events :("});
+            } else{
+                res.render('ps4', {msg: "Callback",city: req.body.city, events: body._embedded.events});
+            }
         }
 
         // we threw error otherwise so catch and render onto the error page

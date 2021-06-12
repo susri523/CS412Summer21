@@ -1,10 +1,17 @@
 extends layout
 
 block content
-    p Searched by #{msg}
-    if city
-        p Here are some music events in #{city}
+    h1 Searched by #{msg}
+
     if events
-        ul
-            each event in events
-                li #{event.name}
+        if city
+            h3 Here are some music events in #{city}
+
+        each event in events
+            - const url = event.url
+            li
+                a(href=url) #{event.name} on #{event.dates.start.localDate}
+
+
+    if noEvents
+        p We found no events in #{city} :(
