@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
 
-// npm installed and redis
+// npm installed
 const fetch = require('node-fetch');
 const request = require('request');
+
+// npm install and promisify 4 main redis commands
 const redis = require('redis');
 const client = redis.createClient();
 const { promisify } = require("util");
@@ -109,27 +111,37 @@ router.post('/async', (req, res, next) => {
     //tell inner await to run first and then use () to run the function
     (async function(){
 
+        // if the city key exists in the cache
         if (await existAsync(req.body.city) ){
+            // get the value using that key
             const musicData = await getAsync(req.body.city);
+
+            //generate a response object using the cached return value
             const response = {
                 musicInfo: musicData,
                 cached: "True"
             }
+
+            // sent the response as json
             res.send(response) ;
         } else {
-
 
             // use await to do the request and pass in the query
             const body = await doAsync(req.body.city);
 
+            // stringify the data that returned from the api as the value, with city as key
             await setAsync(req.body.city, JSON.stringify(body._embedded.events) );
+
+            // set up the response to send for this call that was made
             const response = {
                 musicInfo: body._embedded.events,
                 cached: "False"
             }
 
+            // set the cache expire to 15 seconds
             await expireAsync(req.body.city, 15);
 
+            // send the response as json
             res.send(response);
             // try to render the page to display the events
             // try {
