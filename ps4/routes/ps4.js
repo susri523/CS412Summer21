@@ -1,9 +1,16 @@
 const express = require('express');
 const router = express.Router();
 
-// npm installed
+// npm installed and redis
 const fetch = require('node-fetch');
 const request = require('request');
+const redis = require('redis');
+const client = redis.createClient();
+const { promisify } = require("util");
+const getAsync = promisify(client.get).bind(client);
+const setAsync = promisify(client.set).bind(client);
+const expireAsync = promisify(client.expire).bind(client);
+const existAsync = promisify(client.exists).bind(client);
 
 // ticketmaster key stored in config page so import from there
 const config = require('../tsconfig.json');
@@ -101,21 +108,43 @@ router.post('/async', (req, res, next) => {
 
     //tell inner await to run first and then use () to run the function
     (async function(){
-       // use await to do the request and pass in the query
-       const body = await doAsync(req.body.city);
 
-       // try to render the page to display the events
-       try {
-           if (body.page.totalElements === 0){
-               res.render('ps4', {msg: "Async",city: req.body.city, noEvents: "We found no events :("});
-           } else {
-               res.render('ps4', {msg: "Async", city: req.body.city, events: body._embedded.events});
-           }
-       }
-       // if not render the error page
-       catch(err){
-           res.render('error', {error: err});
-       }
+        if (await existAsync(req.body.city) ){
+            const musicData = await getAsync(req.body.city);
+            const response = {
+                musicInfo: musicData,
+                cached: "True"
+            }
+            res.send(response) ;
+        } else {
+
+
+            // use await to do the request and pass in the query
+            const body = await doAsync(req.body.city);
+
+            await setAsync(req.body.city, JSON.stringify(body._embedded.events) );
+            const response = {
+                musicInfo: body._embedded.events,
+                cached: "False"
+            }
+
+            await expireAsync(req.body.city, 15);
+
+            res.send(response);
+            // try to render the page to display the events
+            // try {
+            //     if (body.page.totalElements === 0){
+            //         res.render('ps4', {msg: "Async",city: req.body.city, noEvents: "We found no events :("});
+            //     } else {
+            //         res.render('ps4', {msg: "Async", city: req.body.city, events: body._embedded.events});
+            //     }
+            // }
+            // if not render the error page
+            // catch(err){
+            //     res.render('error', {error: err});
+            // }
+
+        }
     })() // very very important to have the ()()
 
 })
