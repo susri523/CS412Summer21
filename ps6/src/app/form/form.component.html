@@ -1,4 +1,15 @@
-<p>City:</p>
+<p></p>City:
 
-<input type="text" [(ngModel)]="city">
-<button (click)="searchEvent(city)">Search</button>
+<!--<input name="city" [(ngModel)]="city">-->
+
+<input [formControl]="cityControl">
+<button (click)="searchEvent()">Search</button>
+
+<div *ngIf="cityControl.invalid" style="color:red">
+  Supply a valid city name!
+</div>
+
+<!--<form [formGroup]="cityFormGroup">-->
+<!--  <input formControlName="cityControl">-->
+<!--  <button type="submit">Submit</button>-->
+<!--</form>-->
